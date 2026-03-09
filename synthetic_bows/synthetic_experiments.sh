@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Minimal, public-friendly synthetic_bows training sweep.
-# Run from repository root.
-
 PYTHON_BIN=${PYTHON_BIN:-python}
 DEVICE=${DEVICE:-cpu}
 EPOCHS=${EPOCHS:-200}
