@@ -1,0 +1,24 @@
+*
+!*/
+!.gitignore
+
+# Paper entrypoint files
+!README.md
+!teaser.png
+
+# text_bows
+!text_bows/*.py
+!text_bows/*.sh
+!text_bows/*.md
+!text_bows/*.txt
+
+# synthetic_bows
+!synthetic_bows/*.py
+!synthetic_bows/*.sh
+!synthetic_bows/*.md
+!synthetic_bows/*.txt
+
+# value_coding_features
+!value_coding_features/*.py
+!value_coding_features/*.md
+!value_coding_features/*.txt
