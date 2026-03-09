@@ -27,17 +27,3 @@ python -m synthetic_bows.train_autoencoders \
 ```bash
 ./synthetic_bows/synthetic_experiments.sh
 ```
-
-Environment variable overrides:
-- `PYTHON_BIN`
-- `DEVICE`
-- `EPOCHS`
-- `NUM_FEATURES`
-- `RESULTS_DIR`
-- `LATENT_DIMS`
-
-## Outputs
-
-- Models: `synthetic_bows/results/**/model_seed*.pth`
-- Training losses: `synthetic_bows/results/**/losses_seed*.pt`
-- Config snapshots: `synthetic_bows/results/**/config.json`
