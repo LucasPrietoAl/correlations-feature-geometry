@@ -5,10 +5,6 @@ import csv
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -217,34 +213,6 @@ def save_gap_table(
             )
 
 
-def save_scatter(
-    out_png: Path,
-    freq_count: np.ndarray,
-    r2_val: np.ndarray,
-    r2_single: np.ndarray,
-    ls: int,
-    eval_label: str,
-) -> None:
-    mask = (freq_count > 0) & np.isfinite(r2_val) & np.isfinite(r2_single)
-    x = freq_count[mask]
-    y_val = r2_val[mask]
-    y_single = r2_single[mask]
-
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=160)
-    ax.scatter(x, y_val, s=10, alpha=0.35, color="#1f77b4", label=f"{eval_label} R2")
-    ax.scatter(x, y_single, s=10, alpha=0.35, color="#ff7f0e", label="Single-word-input R2")
-    ax.set_xscale("log")
-    ax.set_ylim(-1, 1)
-    ax.set_xlabel(f"Word frequency in {eval_label.lower()} windows (count)")
-    ax.set_ylabel("Per-word R2")
-    ax.set_title(f"Per-word R2 vs frequency ({eval_label}, latent size = {ls})")
-    ax.grid(True, linestyle=":", alpha=0.35)
-    ax.legend()
-    fig.tight_layout()
-    out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, bbox_inches="tight")
-    plt.close(fig)
-
 
 def split_tag(split: str) -> str:
     return "valtest" if split == "val_test" else split
@@ -364,13 +332,11 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     else:
         stem = f"r2_{tag}_vs_singleword_ls{args.ls}"
     out_csv = out_dir / f"{stem}.csv"
-    out_png = out_dir / f"{stem}.png"
     gap_csv = out_dir / f"r2_gap_{tag}_minus_onehot_ls{args.ls}_sorted.csv"
 
     vocab_path = Path(args.data_dir) / f"{args.dataset}_vocab_v{model_vocab}.pt"
     idx_to_word = load_idx_to_word(vocab_path)
     save_table(out_csv, idx_to_word, freq_count, freq_rate, r2_val, r2_single)
-    save_scatter(out_png, freq_count, r2_val, r2_single, args.ls, eval_label=eval_name)
     save_gap_table(gap_csv, idx_to_word, freq_count, r2_val, r2_single)
 
     valid_mask = (freq_count > 0) & np.isfinite(r2_val) & np.isfinite(r2_single)
@@ -379,7 +345,6 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     print(f"Mean {eval_name.lower()} R2 (valid words): {np.nanmean(r2_val[valid_mask]):.6f}")
     print(f"Mean single-word R2 (valid words): {np.nanmean(r2_single[valid_mask]):.6f}")
     print(f"Saved table: {out_csv}")
-    print(f"Saved scatter: {out_png}")
     print(f"Saved gap table: {gap_csv}")
 
 

@@ -143,12 +143,15 @@ fi
   --model_paths "$MODEL_PATH" \
   --out_dir "./text_bows/figures/umap_semcats/${DATASET}"
 
-# Mechanism figure (wd=1.0 checkpoint — uses plots.py defaults)
-"$PYTHON_BIN" -m text_bows.plots mechanism \
-  --ls "$LATENT_SIZE" \
-  --vocab_path "$VOCAB_PATH" \
-  --data_dir ./text_bows/data \
-  --out_dir ./text_bows/figures
+# Mechanism figures (wd=1.0 checkpoint — uses plots.py defaults)
+for TARGET in mbar Beatles Christmas; do
+  "$PYTHON_BIN" -m text_bows.plots mechanism \
+    --ls "$LATENT_SIZE" \
+    --target "$TARGET" \
+    --vocab_path "$VOCAB_PATH" \
+    --data_dir ./text_bows/data \
+    --out_dir ./text_bows/figures
+done
 
 # ===========================================================================
 # 5) Extended: train across latent sizes × seeds for the structure figure.
