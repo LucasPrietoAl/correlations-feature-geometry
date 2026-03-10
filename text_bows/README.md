@@ -4,10 +4,10 @@ Utilities for text bag-of-words dataset generation, autoencoder training, and fi
 
 ## Install
 
-See the top-level `requirements.txt`:
+From the repository root:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ## 1) Build dataset windows
@@ -17,7 +17,7 @@ Tokenisation is **case-sensitive** (the default). Tokens like "January" and
 Roman-numeral structure analyses.
 
 ```bash
-python -m text_bows.make_dataset \
+uv run python -m text_bows.make_dataset \
   --dataset wikitext \
   --vocab_size 10000 \
   --group_size 20 \
@@ -33,14 +33,14 @@ when running extended experiments).
 
 ```bash
 # wd=4.0 — months / weights / umap
-python -m text_bows.train_autoencoder \
+uv run python -m text_bows.train_autoencoder \
   --dataset wikitext --vocab_size 10000 --group_size 20 --stride 1 \
   --data_dir ./text_bows/data --save_dir ./text_bows/models \
   --latent_size 1000 --loss mse --epochs 10 --lr 5e-4 \
   --weight_decay 4.0 --seed 1 --device cpu
 
 # wd=1.0 — mechanism (and structure)
-python -m text_bows.train_autoencoder \
+uv run python -m text_bows.train_autoencoder \
   --dataset wikitext --vocab_size 10000 --group_size 20 --stride 1 \
   --data_dir ./text_bows/data --save_dir ./text_bows/models \
   --latent_size 1000 --loss mse --epochs 10 --lr 5e-4 \
@@ -50,18 +50,18 @@ python -m text_bows.train_autoencoder \
 ## 3) Generate plots
 
 ```bash
-python -m text_bows.plots --help
-python -m text_bows.plots months          # wd=4.0 checkpoint
-python -m text_bows.plots weights         # wd=4.0 checkpoint
-python -m text_bows.plots umap \          # wd=4.0 checkpoint
+uv run python -m text_bows.plots --help
+uv run python -m text_bows.plots months          # wd=4.0 checkpoint
+uv run python -m text_bows.plots weights         # wd=4.0 checkpoint
+uv run python -m text_bows.plots umap \          # wd=4.0 checkpoint
   --model_paths ./text_bows/models/ae_wikitext_v10000_w20_seed1_L1000_mse_wd4.0_seed1.pt
-python -m text_bows.plots mechanism --ls 1000   # wd=1.0 checkpoint (default template)
+uv run python -m text_bows.plots mechanism --ls 1000   # wd=1.0 checkpoint (default template)
 ```
 
 The per-word R2 table used by mechanism panel A can be generated separately:
 
 ```bash
-python -m text_bows.validation_vs_singleword_r2 \
+uv run python -m text_bows.validation_vs_singleword_r2 \
   --ls 1000 \
   --split val_test
 ```

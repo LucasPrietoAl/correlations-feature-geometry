@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYTHON_BIN=${PYTHON_BIN:-python}
+PYTHON_BIN=${PYTHON_BIN:-uv run python}
 DEVICE=${DEVICE:-cpu}
 EPOCHS=${EPOCHS:-200}
 NUM_FEATURES=${NUM_FEATURES:-12}
@@ -18,7 +18,7 @@ WD_REGULARISED=${WD_REGULARISED:-6.0}
 
 for STRUCTURE in circular figure8 sphere iid; do
   # Train with the default weight decay (used for Linear and ReLU rows).
-  "$PYTHON_BIN" -m synthetic_bows.train_autoencoders \
+  $PYTHON_BIN -m synthetic_bows.train_autoencoders \
     --device "$DEVICE" \
     --epochs "$EPOCHS" \
     --num-features "$NUM_FEATURES" \
@@ -29,7 +29,7 @@ for STRUCTURE in circular figure8 sphere iid; do
     --results-dir "$RESULTS_DIR"
 
   # Train with the higher weight decay (used for the regularised ReLU row).
-  "$PYTHON_BIN" -m synthetic_bows.train_autoencoders \
+  $PYTHON_BIN -m synthetic_bows.train_autoencoders \
     --device "$DEVICE" \
     --epochs "$EPOCHS" \
     --num-features "$NUM_FEATURES" \
@@ -43,7 +43,7 @@ done
 # --- Plotting -----------------------------------------------------------------
 
 for STRUCTURE in circular figure8 sphere iid; do
-  "$PYTHON_BIN" -m synthetic_bows.plots \
+  $PYTHON_BIN -m synthetic_bows.plots \
     --results-dir "$RESULTS_DIR" \
     --output-dir "$OUTPUT_DIR" \
     --dtype "$STRUCTURE" \

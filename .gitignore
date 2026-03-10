@@ -6,6 +6,9 @@
 !README.md
 !requirements.txt
 !teaser.png
+!pyproject.toml
+!uv.lock
+!.python-version
 
 # text_bows
 !text_bows/*.py

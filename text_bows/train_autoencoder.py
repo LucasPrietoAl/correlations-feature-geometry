@@ -15,6 +15,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, Subset
 from contextlib import nullcontext
 import numpy as np
+from tqdm import tqdm
 
 from text_bows.utils_io import (
     SparseNPZDataset,
@@ -55,12 +56,13 @@ def collate_indices(batch: List[List[int]]) -> Tuple[List[torch.LongTensor], tor
 def dense_target(xs: List[torch.Tensor], cnts: torch.Tensor, inp_dim: int, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
     if len(xs) == 0 or cnts.sum().item() == 0:
         return torch.zeros((len(xs), inp_dim), dtype=dtype, device=device)
-    cols = torch.cat(xs).to(device)
-    rows = torch.repeat_interleave(torch.arange(len(xs), device=device), cnts.to(device))
+    sparse_dev = "cpu" if device.type == "mps" else device
+    cols = torch.cat(xs).to(sparse_dev)
+    rows = torch.repeat_interleave(torch.arange(len(xs), device=sparse_dev), cnts.to(sparse_dev))
     idx = torch.stack([rows, cols])
-    val = torch.ones(int(cnts.sum()), device=device, dtype=dtype)
-    sp = torch.sparse_coo_tensor(idx, val, (len(xs), inp_dim), device=device).coalesce()
-    return sp.to_dense()
+    val = torch.ones(int(cnts.sum()), device=sparse_dev, dtype=dtype)
+    sp = torch.sparse_coo_tensor(idx, val, (len(xs), inp_dim), device=sparse_dev).coalesce()
+    return sp.to_dense().to(device)
 
 
 
@@ -79,14 +81,17 @@ class Autoencoder(nn.Module):
         if total == 0:
             return torch.zeros(B, self.hid, device=dev, dtype=dt)
 
-        rows = torch.repeat_interleave(torch.arange(B, device=dev), cnts.to(dev))
-        cols = torch.cat(xs).to(dev)
+        # Sparse ops are not supported on MPS; fall back to CPU for the
+        # sparse matmul and move the result back to the model device.
+        sparse_dev = "cpu" if dev.type == "mps" else dev
+        rows = torch.repeat_interleave(torch.arange(B, device=sparse_dev), cnts.to(sparse_dev))
+        cols = torch.cat(xs).to(sparse_dev)
         idx = torch.stack([rows, cols])
-        val = torch.ones(total, device=dev, dtype=torch.float32)
-        mask = torch.sparse_coo_tensor(idx, val, (B, self.inp), device=dev).coalesce()
+        val = torch.ones(total, device=sparse_dev, dtype=torch.float32)
+        mask = torch.sparse_coo_tensor(idx, val, (B, self.inp), device=sparse_dev).coalesce()
 
         with torch.amp.autocast("cuda", enabled=False):
-            lat = torch.sparse.mm(mask, self.enc.weight.t().float())
+            lat = torch.sparse.mm(mask, self.enc.weight.t().float().to(sparse_dev)).to(dev)
         return F.relu(lat) if self.relu_lat else lat
 
     def decode(self, lat):
@@ -124,7 +129,7 @@ def evaluate(model: nn.Module, loader: DataLoader, vocab: int, loss_name: str, m
     skipped_batches = 0
     with torch.inference_mode():
         with amp_ctx:
-            for xs, cnts in loader:
+            for xs, cnts in tqdm(loader, desc="  val", leave=False):
                 if not xs:
                     skipped_batches += 1
                     continue
@@ -177,8 +182,9 @@ def train(
     for ep in range(1, cfg.epochs + 1):
         ep_sum, ep_elems = 0.0, 0
         skipped_batches = 0
+        pbar = tqdm(train_loader, desc=f"Epoch {ep}/{cfg.epochs}", leave=False)
 
-        for xs, cnts in train_loader:
+        for xs, cnts in pbar:
             if not xs:
                 skipped_batches += 1
                 continue
@@ -205,7 +211,9 @@ def train(
             elems = tgt.numel()
             ep_sum += float(loss.item()) * elems
             ep_elems += elems
+            pbar.set_postfix(loss=f"{ep_sum / ep_elems:.6f}")
 
+        pbar.close()
         train_loss = ep_sum / max(1, ep_elems)
         if skipped_batches:
             logging.info("Skipped %d empty training batches in epoch %d.", skipped_batches, ep)

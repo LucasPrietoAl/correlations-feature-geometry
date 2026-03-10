@@ -19,7 +19,7 @@ for arg in "$@"; do
   esac
 done
 
-PYTHON_BIN=${PYTHON_BIN:-python}
+PYTHON_BIN=${PYTHON_BIN:-uv run python}
 DATASET=${DATASET:-wikitext}
 VOCAB_SIZE=${VOCAB_SIZE:-10000}
 GROUP_SIZE=${GROUP_SIZE:-20}
@@ -49,7 +49,7 @@ R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sor
 # NOTE: The paper uses case-sensitive vocabulary (--lowercase is NOT passed).
 # Tokens like "January" and "january" are distinct entries.  Do not add
 # --lowercase here unless you intend to change the experiment.
-"$PYTHON_BIN" -m text_bows.make_dataset \
+$PYTHON_BIN -m text_bows.make_dataset \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
   --group_size "$GROUP_SIZE" \
@@ -61,7 +61,7 @@ R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sor
 # ===========================================================================
 
 # wd=4.0 checkpoint — used by months, weights, and umap plots.
-"$PYTHON_BIN" -m text_bows.train_autoencoder \
+$PYTHON_BIN -m text_bows.train_autoencoder \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
   --group_size "$GROUP_SIZE" \
@@ -77,7 +77,7 @@ R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sor
   --device "$DEVICE"
 
 # wd=1.0 checkpoint — used by the mechanism and structure plots.
-"$PYTHON_BIN" -m text_bows.train_autoencoder \
+$PYTHON_BIN -m text_bows.train_autoencoder \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
   --group_size "$GROUP_SIZE" \
@@ -96,7 +96,7 @@ R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sor
 # 3) Compute per-word R2 table (used by mechanism panel A).
 # ===========================================================================
 if [[ ! -f "${R2_GAP_CSV}" ]]; then
-  "$PYTHON_BIN" -m text_bows.validation_vs_singleword_r2 \
+  $PYTHON_BIN -m text_bows.validation_vs_singleword_r2 \
     --ls "$LATENT_SIZE" \
     --checkpoint_template "$MECH_TEMPLATE" \
     --data_dir ./text_bows/data \
@@ -114,7 +114,7 @@ fi
 # ===========================================================================
 
 # Months figure (wd=4.0 checkpoint)
-"$PYTHON_BIN" -m text_bows.plots months \
+$PYTHON_BIN -m text_bows.plots months \
   --ls "$LATENT_SIZE" \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
@@ -126,7 +126,7 @@ fi
   --base_data_dir ./text_bows/data
 
 # Weight PCA figure (wd=4.0 checkpoint)
-"$PYTHON_BIN" -m text_bows.plots weights \
+$PYTHON_BIN -m text_bows.plots weights \
   --ls "$LATENT_SIZE" \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
@@ -138,14 +138,14 @@ fi
   --base_data_dir ./text_bows/data
 
 # UMAP semantic categories figure (wd=4.0 checkpoint)
-"$PYTHON_BIN" -m text_bows.plots umap \
+$PYTHON_BIN -m text_bows.plots umap \
   --vocab_path "$VOCAB_PATH" \
   --model_paths "$MODEL_PATH" \
   --out_dir "./text_bows/figures/umap_semcats/${DATASET}"
 
 # Mechanism figures (wd=1.0 checkpoint — uses plots.py defaults)
 for TARGET in mbar Beatles Christmas; do
-  "$PYTHON_BIN" -m text_bows.plots mechanism \
+  $PYTHON_BIN -m text_bows.plots mechanism \
     --ls "$LATENT_SIZE" \
     --target "$TARGET" \
     --vocab_path "$VOCAB_PATH" \
@@ -172,7 +172,7 @@ if $EXTENDED; then
         continue
       fi
       echo "Training seed=${S} L=${LS} wd=${MECH_WD} ..."
-      "$PYTHON_BIN" -m text_bows.train_autoencoder \
+      $PYTHON_BIN -m text_bows.train_autoencoder \
         --dataset "$DATASET" \
         --vocab_size "$VOCAB_SIZE" \
         --group_size "$GROUP_SIZE" \
@@ -190,7 +190,7 @@ if $EXTENDED; then
   done
 
   # Structure plot — uses plots.py defaults (wd=1.0 templates for all seeds).
-  "$PYTHON_BIN" -m text_bows.plots structure \
+  $PYTHON_BIN -m text_bows.plots structure \
     --vocab_path "$VOCAB_PATH" \
     --plots_root ./text_bows/figures \
     --latent_sizes "${STRUCTURE_LATENT_SIZES[@]}"

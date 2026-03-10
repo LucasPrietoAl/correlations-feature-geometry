@@ -26,7 +26,7 @@
 
 
 <br/>
-This is the official implementation of our ICLR2026 paper <a href="https://openreview.net/pdf?id=7akSRQS5Xh" target="_blank"><i>From Data Statistics to Feature Geometry: How Correlations Shape Superposition</i></a>. Here you can find guidance to reproduce the main results of the paper.
+This is the official implementation of our ICLR 2026 paper <a href="https://openreview.net/pdf?id=7akSRQS5Xh" target="_blank"><i>From Data Statistics to Feature Geometry: How Correlations Shape Superposition</i></a>. Here you can find guidance to reproduce the main results of the paper.
 <br/>
 
 ## Overview
@@ -41,22 +41,26 @@ The repository is organized around three complementary experimental settings:
 ## Getting Started
 
 ```bash
-pip install -r requirements.txt
+# First install UV package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Then install the python dependencies
+uv sync
 ```
 
-Each subproject has its own README. A typical workflow is:
-1. generate or download the relevant data for the subproject
-2. train the corresponding model or sweep
-3. reproduce the paper figures from the saved checkpoints
+Each subproject has its own `README.md` file with detailed instructions and explanation. A typical workflow is:
+1. Generate or download the relevant data for the subproject
+2. Train the corresponding model or sweep
+3. Reproduce the paper figures from the saved checkpoints
+
 
 ## Citation
 ```shell
 @inproceedings{
-prieto2026correlations,
-title={Correlations in the Data Lead to Semantically Rich Feature Geometry Under Superposition},
-author={Lucas Prieto and Edward Stevinson and Melih Barsbey and Tolga Birdal and Pedro A. M. Mediano},
-booktitle={The Fourteenth International Conference on Learning Representations},
-year={2026},
-url={https://openreview.net/forum?id=7akSRQS5Xh}
+  prieto2026correlations,
+  title={Correlations in the Data Lead to Semantically Rich Feature Geometry Under Superposition},
+  author={Lucas Prieto and Edward Stevinson and Melih Barsbey and Tolga Birdal and Pedro A. M. Mediano},
+  booktitle={The Fourteenth International Conference on Learning Representations},
+  year={2026},
+  url={https://openreview.net/forum?id=7akSRQS5Xh}
 }
 ```
