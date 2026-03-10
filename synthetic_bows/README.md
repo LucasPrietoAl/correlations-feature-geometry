@@ -4,10 +4,10 @@ Synthetic bag-of-words experiments for testing feature geometry under controlled
 
 ## Install
 
+See the top-level `requirements.txt`:
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r synthetic_bows/requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Train synthetic autoencoders

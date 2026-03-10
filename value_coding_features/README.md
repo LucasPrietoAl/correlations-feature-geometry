@@ -4,10 +4,10 @@ Experiments for compass-direction prediction from learned city embeddings and ge
 
 ## Install
 
+See the top-level `requirements.txt`:
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r value_coding_features/requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Run pipeline

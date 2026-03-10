@@ -1,9 +1,0 @@
-numpy
-torch
-datasets
-nltk
-tqdm
-matplotlib
-scikit-learn
-scipy
-umap-learn

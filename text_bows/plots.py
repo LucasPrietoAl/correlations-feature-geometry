@@ -1131,7 +1131,7 @@ def panel_preact_histogram(ax: plt.Axes, pre_natural: np.ndarray, pre_onehot_val
     pos_frac = (pre_natural > 0).mean()
 
     i0 = int(np.searchsorted(xs, 0.0))
-    y0 = float(kde(0.0))
+    y0 = float(kde(0.0).item())
     xs_neg = np.append(xs[:i0], 0.0)
     ys_neg = np.append(ys[:i0], y0)
     xs_pos = np.concatenate([[0.0], xs[i0:]])

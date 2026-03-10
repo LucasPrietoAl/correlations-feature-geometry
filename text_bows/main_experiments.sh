@@ -4,7 +4,8 @@ set -euo pipefail
 # Text bag-of-words experiments.
 #
 # Default run: builds dataset, trains two autoencoders (L=1000, at wd=4.0
-# and wd=1.0), and generates months, weights, umap, and mechanism plots.
+# and wd=1.0), computes the per-word R2 table, and generates months, weights,
+# umap, and mechanism plots.
 #
 # Extended run (--extended): additionally trains models at wd=1.0 across
 # 16 latent sizes and 3 seeds (48 checkpoints) and generates the structure
@@ -39,6 +40,8 @@ fi
 VOCAB_PATH="./text_bows/data/${DATASET}_vocab_v${VOCAB_SIZE}.pt"
 MODEL_TEMPLATE="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed${SEED}${STRIDE_TAG}_L{ls}_mse_wd${WEIGHT_DECAY}_seed${SEED}.pt"
 MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed${SEED}${STRIDE_TAG}_L${LATENT_SIZE}_mse_wd${WEIGHT_DECAY}_seed${SEED}.pt"
+MECH_TEMPLATE="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed${SEED}${STRIDE_TAG}_L{ls}_mse_wd${MECH_WD}_seed${SEED}.pt"
+R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sorted.csv"
 
 # ===========================================================================
 # 1) Build sparse bag-of-words windows (case-sensitive tokenisation).
@@ -73,7 +76,7 @@ MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed$
   --seed "$SEED" \
   --device "$DEVICE"
 
-# wd=1.0 checkpoint — used by the mechanism plot.
+# wd=1.0 checkpoint — used by the mechanism and structure plots.
 "$PYTHON_BIN" -m text_bows.train_autoencoder \
   --dataset "$DATASET" \
   --vocab_size "$VOCAB_SIZE" \
@@ -90,7 +93,24 @@ MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed$
   --device "$DEVICE"
 
 # ===========================================================================
-# 3) Generate figures.
+# 3) Compute per-word R2 table (used by mechanism panel A).
+# ===========================================================================
+if [[ ! -f "${R2_GAP_CSV}" ]]; then
+  "$PYTHON_BIN" -m text_bows.validation_vs_singleword_r2 \
+    --ls "$LATENT_SIZE" \
+    --checkpoint_template "$MECH_TEMPLATE" \
+    --data_dir ./text_bows/data \
+    --dataset "$DATASET" \
+    --vocab_size "$VOCAB_SIZE" \
+    --group_size "$GROUP_SIZE" \
+    --stride "$STRIDE" \
+    --split val_test \
+    --device "$DEVICE" \
+    --out_dir ./text_bows/figures
+fi
+
+# ===========================================================================
+# 4) Generate figures.
 # ===========================================================================
 
 # Months figure (wd=4.0 checkpoint)
@@ -131,7 +151,7 @@ MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed$
   --out_dir ./text_bows/figures
 
 # ===========================================================================
-# 4) Extended: train across latent sizes × seeds for the structure figure.
+# 5) Extended: train across latent sizes × seeds for the structure figure.
 # ===========================================================================
 if $EXTENDED; then
   echo ""

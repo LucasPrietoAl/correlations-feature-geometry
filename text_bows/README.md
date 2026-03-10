@@ -4,10 +4,10 @@ Utilities for text bag-of-words dataset generation, autoencoder training, and fi
 
 ## Install
 
+See the top-level `requirements.txt`:
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r text_bows/requirements.txt
+pip install -r requirements.txt
 ```
 
 ## 1) Build dataset windows
@@ -58,10 +58,24 @@ python -m text_bows.plots umap \          # wd=4.0 checkpoint
 python -m text_bows.plots mechanism --ls 1000   # wd=1.0 checkpoint (default template)
 ```
 
+The per-word R2 table used by mechanism panel A can be generated separately:
+
+```bash
+python -m text_bows.validation_vs_singleword_r2 \
+  --ls 1000 \
+  --split val_test
+```
+
+This writes:
+
+- `text_bows/figures/r2_valtest_vs_singleword_ls1000.csv`
+- `text_bows/figures/r2_gap_valtest_minus_onehot_ls1000_sorted.csv`
+
 ## Pipeline scripts
 
 **Default run** — builds the dataset, trains two models (L=1000 at wd=4.0 and
-wd=1.0), and generates months, weights, umap, and mechanism figures:
+wd=1.0), computes the R2 table, and generates months, weights, umap, and
+mechanism figures:
 
 ```bash
 DEVICE=cuda:0 bash text_bows/main_experiments.sh
