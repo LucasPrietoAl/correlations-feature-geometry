@@ -28,7 +28,6 @@
 <br/>
 This is the official implementation of our ICLR2026 paper <a href="https://openreview.net/pdf?id=7akSRQS5Xh" target="_blank"><i>From Data Statistics to Feature Geometry: How Correlations Shape Superposition</i></a>. Here you can find guidance to reproduce the main results of the paper.
 <br/>
-![Teaser](teaser.png)
 
 ## Overview
 
