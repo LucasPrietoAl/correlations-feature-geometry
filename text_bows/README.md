@@ -52,6 +52,20 @@ python -m text_bows.plots umap \
   --model_paths ./text_bows/models/ae_wikitext_v10000_w20_seed1_L1000_mse_wd4.0_seed1.pt
 ```
 
+If you also want the per-word `val+test` vs one-word R2 tables used by the mechanism plot,
+run:
+
+```bash
+python -m text_bows.validation_vs_singleword_r2 \
+  --ls 1000 \
+  --split val_test
+```
+
+This writes both:
+
+- `text_bows/figures/r2_valtest_vs_singleword_ls1000.csv`
+- `text_bows/figures/r2_gap_valtest_minus_onehot_ls1000_sorted.csv`
+
 Legacy / paper-specific plotting commands such as `structure`, `mechanism`, and `all`
 expect additional checkpoints or custom checkpoint templates. Use `python -m
 text_bows.plots --help` for the full CLI.
@@ -61,3 +75,7 @@ text_bows.plots --help` for the full CLI.
 ```bash
 ./text_bows/main_experiments.sh
 ```
+
+`text_bows/main_experiments.sh` will also generate
+`text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sorted.csv`
+automatically if it is missing.

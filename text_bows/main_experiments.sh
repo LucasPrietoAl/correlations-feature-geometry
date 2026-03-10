@@ -18,6 +18,7 @@ fi
 VOCAB_PATH="./text_bows/data/${DATASET}_vocab_v${VOCAB_SIZE}.pt"
 MODEL_TEMPLATE="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed${SEED}${STRIDE_TAG}_L{ls}_mse_wd${WEIGHT_DECAY}_seed${SEED}.pt"
 MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed${SEED}${STRIDE_TAG}_L${LATENT_SIZE}_mse_wd${WEIGHT_DECAY}_seed${SEED}.pt"
+R2_GAP_CSV="./text_bows/figures/r2_gap_valtest_minus_onehot_ls${LATENT_SIZE}_sorted.csv"
 
 # 1) Build sparse bag-of-words windows.
 "$PYTHON_BIN" -m text_bows.make_dataset \
@@ -44,6 +45,21 @@ MODEL_PATH="./text_bows/models/ae_${DATASET}_v${VOCAB_SIZE}_w${GROUP_SIZE}_seed$
   --device "$DEVICE"
 
 # 3) Generate the public quickstart figures against the trained checkpoint.
+if [[ ! -f "${R2_GAP_CSV}" ]]; then
+  "$PYTHON_BIN" -m text_bows.validation_vs_singleword_r2 \
+    --ls "$LATENT_SIZE" \
+    --checkpoint_template "$MODEL_TEMPLATE" \
+    --data_dir ./text_bows/data \
+    --dataset "$DATASET" \
+    --vocab_size "$VOCAB_SIZE" \
+    --group_size "$GROUP_SIZE" \
+    --stride "$STRIDE" \
+    --split val_test \
+    --device "$DEVICE" \
+    --out_dir ./text_bows/figures
+fi
+
+# 4) Generate the public quickstart figures against the trained checkpoint.
 "$PYTHON_BIN" -m text_bows.plots months \
   --ls "$LATENT_SIZE" \
   --dataset "$DATASET" \
