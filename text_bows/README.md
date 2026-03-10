@@ -2,17 +2,6 @@
 
 Utilities for text bag-of-words dataset generation, autoencoder training, and figure production.
 
-## Scope
-
-This directory is intended to be **code-first** for public release.
-Generated artifacts should not be committed:
-- `text_bows/data/`
-- `text_bows/models/`
-- `text_bows/figures/`
-- `text_bows/__pycache__/`
-
-Regenerate artifacts with the commands below.
-
 ## Install
 
 ```bash
@@ -72,20 +61,3 @@ text_bows.plots --help` for the full CLI.
 ```bash
 ./text_bows/main_experiments.sh
 ```
-
-Environment variable overrides:
-- `PYTHON_BIN`
-- `DATASET`
-- `VOCAB_SIZE`
-- `GROUP_SIZE`
-- `STRIDE`
-- `LATENT_SIZE`
-- `WEIGHT_DECAY`
-- `SEED`
-- `DEVICE`
-
-## Expected outputs
-
-- Datasets: `text_bows/data/*.npz` (+ `.meta.json`)
-- Checkpoints: `text_bows/models/*.pt`
-- Figures: `text_bows/figures/*.pdf`, `text_bows/figures/*.png`
