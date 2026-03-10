@@ -1,11 +1,6 @@
-# [](https://openreview.net/pdf?id=7akSRQS5Xh)
-
-**Authors:** Lucas Prieto, Edward Stevinson, Melih Barsbey, Tolga Birdal, Pedro A. M. Mediano
-
-
 <p align="center">
 
-  <h1 align="center"><a href="">From Data Statistics to Feature Geometry: How Correlations Shape Superposition</a></h1>
+  <h1 align="center"><a href="https://openreview.net/pdf?id=7akSRQS5Xh">From Data Statistics to Feature Geometry: How Correlations Shape Superposition</a></h1>
   <p align="center">
     <a href="https://safeandtrustedai.org/person/lucas-prieto/"><strong>Lucas Prieto</strong></a>
     ·
@@ -21,7 +16,7 @@
     <strong>Imperial College London</strong></a>
   </p>
   <p align="center">
-    <strong>Under Review</strong></a>
+    <strong>ILCR 2026</strong></a>
   </p>
   <div align="center">
     <img src="./teaser.png" alt="Logo" width="100%">
