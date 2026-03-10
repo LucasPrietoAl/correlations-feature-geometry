@@ -4,6 +4,7 @@
 
 # Paper entrypoint files
 !README.md
+!requirements.txt
 !teaser.png
 
 # text_bows
