@@ -1355,7 +1355,7 @@ def panel_compact_two_towers(
 ) -> None:
     bar_w = 0.42
     bias_lw = 3.2
-    x1, x2 = 0.0, 0.68
+    x1, x2 = 0.0, 0.58
     label_thresh = 0.012
     month_label_whitelist = {"December", "January", "July"}
 
@@ -1384,7 +1384,7 @@ def panel_compact_two_towers(
                 centers[lbl] = (x, run + val / 2)
         return running, bias_val + np.cumsum(np.array(values)), centers
 
-    def draw_split_month_tower(
+    def draw_month_tower_with_sum(
         x: float,
         labels: List[str],
         values: List[float],
@@ -1395,14 +1395,14 @@ def panel_compact_two_towers(
         # Put the strongest positive month at the top of the positive stack.
         pos_pairs = list(reversed(pos_pairs))
 
-        pile_w = 0.34
-        pile_dx = pile_w / 2
-        x_red = x - pile_dx
-        x_green = x + pile_dx
+        tower_w = 0.40
+        sum_w = 0.28
+        gap_w = 0.08
+        x_tower = x
+        x_sum = x + (tower_w / 2 + gap_w + sum_w / 2)
 
-        neg_total = float(sum(val for _, val in neg_pairs))
-        pos_base = bias_val + neg_total
         neg_base = bias_val
+        pos_base = bias_val
         pos_points = [pos_base]
         neg_points = [bias_val]
         centers: Dict[str, Tuple[float, float]] = {}
@@ -1412,12 +1412,12 @@ def panel_compact_two_towers(
             if lbl in WORD_COLOR_OVERRIDES:
                 col = WORD_COLOR_OVERRIDES[lbl]
             bottom = neg_base
-            ax.bar(x_red, val, bottom=bottom, width=pile_w, color=col, alpha=0.88, edgecolor="white", lw=0.5, zorder=3)
-            centers[lbl] = (x_red, bottom + val / 2)
+            ax.bar(x_tower, val, bottom=bottom, width=tower_w, color=col, alpha=0.88, edgecolor="white", lw=0.5, zorder=3)
+            centers[lbl] = (x_tower, bottom + val / 2)
             if lbl in month_label_whitelist:
                 cy = centers[lbl][1]
                 txt_col = _label_text_color(col)
-                ax.text(x_red, cy, lbl, va="center", ha="center", fontsize=FS_ANN - 2, color=txt_col, fontweight="bold", zorder=4)
+                ax.text(x_tower, cy, lbl, va="center", ha="center", fontsize=FS_ANN - 2, color=txt_col, fontweight="bold", zorder=4)
             neg_base += val
             neg_points.append(neg_base)
 
@@ -1426,19 +1426,46 @@ def panel_compact_two_towers(
             if lbl in WORD_COLOR_OVERRIDES:
                 col = WORD_COLOR_OVERRIDES[lbl]
             bottom = pos_base
-            ax.bar(x_green, val, bottom=bottom, width=pile_w, color=col, alpha=0.88, edgecolor="white", lw=0.5, zorder=3)
-            centers[lbl] = (x_green, bottom + val / 2)
+            ax.bar(x_tower, val, bottom=bottom, width=tower_w, color=col, alpha=0.88, edgecolor="white", lw=0.5, zorder=3)
+            centers[lbl] = (x_tower, bottom + val / 2)
             if lbl in month_label_whitelist:
                 cy = centers[lbl][1]
                 txt_col = _label_text_color(col)
-                ax.text(x_green, cy, lbl, va="center", ha="center", fontsize=FS_ANN - 2, color=txt_col, fontweight="bold", zorder=4)
+                ax.text(x_tower, cy, lbl, va="center", ha="center", fontsize=FS_ANN - 2, color=txt_col, fontweight="bold", zorder=4)
             pos_base += val
             pos_points.append(pos_base)
 
-        return pos_points, neg_points, x_red, x_green, pile_w, centers
+        month_sum = float(np.sum(values))
+        sum_color = "#2ca02c"
+        ax.bar(
+            x_sum,
+            month_sum,
+            bottom=bias_val,
+            width=sum_w,
+            color=sum_color,
+            alpha=0.95,
+            edgecolor="none",
+            lw=0.0,
+            zorder=4,
+        )
+        with matplotlib.rc_context({"hatch.linewidth": 2.8}):
+            ax.bar(
+                x_sum,
+                month_sum,
+                bottom=bias_val,
+                width=sum_w,
+                color="none",
+                alpha=1.0,
+                edgecolor="#d62728",
+                hatch="///",
+                lw=0.0,
+                zorder=5,
+            )
+
+        return pos_points, neg_points, x_tower, x_sum, tower_w, sum_w, centers
 
     running1, cum1, left_centers = draw_tower(x1, labels1, values1, highlight_target=True)
-    pos2, neg2, x2_red, x2_green, pile_w, month_centers = draw_split_month_tower(x2, labels2, values2)
+    pos2, neg2, x_tower, x_sum, tower_w, sum_w, month_centers = draw_month_tower_with_sum(x2, labels2, values2)
 
     ax.axhspan(-999, 0, color="#d62728", alpha=0.07, zorder=0)
     ax.axhspan(0, 999, color="#2ca02c", alpha=0.07, zorder=0)
@@ -1448,13 +1475,17 @@ def panel_compact_two_towers(
     month_sum = float(np.sum(values2))
     top2 = float(max(pos2)) if len(pos2) > 0 else bias_val
     neg_bottom = float(min(neg2)) if len(neg2) > 0 else bias_val
-    pos_bottom = float(min(pos2)) if len(pos2) > 0 else bias_val
-    arrow_dx = pile_w * 0.58
-    arrow_len = max(0.03, (bias_val - 0.012) - (neg_bottom + 0.016))
+    brace_gap = x_sum - x_tower - (tower_w / 2 + sum_w / 2)
+    brace_x = x_tower + tower_w / 2 + brace_gap / 2
+    brace_y = 0.5 * (top2 + neg_bottom)
+    arrow_dx = tower_w * 0.62
+    arrow_gap = 0.012
+    red_arrow_len = max(0.05, min(0.085, bias_val - neg_bottom - 0.008))
+    green_arrow_len = max(0.05, min(0.085, top2 - bias_val - 0.008))
     ax.annotate(
         "",
-        xy=(x2_red - arrow_dx, bias_val - arrow_len),
-        xytext=(x2_red - arrow_dx, bias_val),
+        xy=(x_tower - arrow_dx, bias_val - arrow_gap - red_arrow_len),
+        xytext=(x_tower - arrow_dx, bias_val - arrow_gap),
         arrowprops=dict(
             arrowstyle="-|>",
             color="#d62728",
@@ -1467,8 +1498,8 @@ def panel_compact_two_towers(
     )
     ax.annotate(
         "",
-        xy=(x2_green + arrow_dx, pos_bottom + arrow_len),
-        xytext=(x2_green + arrow_dx, pos_bottom),
+        xy=(x_tower - arrow_dx, bias_val + arrow_gap + green_arrow_len),
+        xytext=(x_tower - arrow_dx, bias_val + arrow_gap),
         arrowprops=dict(
             arrowstyle="-|>",
             color="#2ca02c",
@@ -1479,17 +1510,53 @@ def panel_compact_two_towers(
         ),
         zorder=6,
     )
-    ax.text(x2, top2 + 0.025, f"$\\Sigma$ = {month_sum:+.3f}", fontsize=FS_NUM + 2, color="#d62728", va="bottom", ha="center", zorder=6)
+    sum_top = bias_val + month_sum
+    sum_mid = bias_val + month_sum / 2.0
     ax.text(
-        x2,
-        top2 + 0.10,
-        "Interference\ncancels out",
+        brace_x,
+        brace_y,
+        "}",
+        color="#000000",
+        fontsize=38,
+        va="center",
+        ha="center",
+        zorder=6,
+    )
+    ax.text(
+        x_sum + 0.03,
+        bias_val - 0.016,
+        f"$\\mathbf{{\\Sigma}}$ = {month_sum:.3f}",
+        color="#2ca02c",
         fontsize=FS_NUM + 2,
-        color="#d62728",
-        va="bottom",
+        va="top",
         ha="center",
         zorder=6,
         fontweight="bold",
+    )
+    ax.text(
+        x_sum - 0.035,
+        -0.05,
+        "Interference\ncancels out",
+        color="#d62728",
+        fontsize=FS_NUM + 2,
+        va="top",
+        ha="center",
+        zorder=6,
+        fontweight="bold",
+    )
+    ax.annotate(
+        "",
+        xy=(x_sum, sum_top),
+        xytext=(x_sum, -0.155),
+        arrowprops=dict(
+            arrowstyle="->",
+            color="#d62728",
+            linestyle="dotted",
+            lw=1.5,
+            connectionstyle="arc3,rad=0",
+            shrinkA=0,
+            shrinkB=0,
+        ),
     )
     if "December" in left_centers:
         dec_x, dec_y = left_centers["December"]
@@ -1502,7 +1569,7 @@ def panel_compact_two_towers(
             fontweight="bold",
             ha="center",
             va="center",
-            arrowprops=dict(arrowstyle="->", color="#2ca02c", lw=1.8, linestyle=":"),
+            arrowprops=dict(arrowstyle="->", color="#2ca02c", linestyle="dotted", lw=1.5),
             zorder=7,
         )
 
@@ -1515,9 +1582,10 @@ def panel_compact_two_towers(
     ax.legend(handles=legend_handles, loc="upper right", fontsize=FS_LEGEND - 1, framealpha=0.9)
 
     all_y = [bias_val, 0.0] + list(running1) + list(cum1) + list(pos2) + list(neg2)
+    right_xtick = 0.5 * (x_tower + x_sum)
     ax.set_ylim(min(all_y) - 0.05, 0.62)
-    ax.set_xlim(x1 - bar_w / 2 - 0.08, x2_green + pile_w / 2 + 0.08)
-    ax.set_xticks([x1, x2])
+    ax.set_xlim(x1 - bar_w / 2 - 0.08, x_sum + sum_w / 2 + 0.08)
+    ax.set_xticks([x1, right_xtick])
     ax.set_xticklabels([ctx1_desc, ctx2_desc], fontsize=FS_TICK)
     ax.set_ylabel("Pre-activation", fontsize=FS_LABEL, labelpad=-2)
     ax.grid(axis="y", ls=":", alpha=0.35)
