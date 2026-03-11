@@ -4,10 +4,10 @@ Synthetic bag-of-words experiments for testing feature geometry under controlled
 
 ## Install
 
-See the top-level `requirements.txt`:
+From the repository root:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Train synthetic autoencoders
@@ -16,7 +16,7 @@ The main figure compares W^T W Gram matrices across latent dimensions for Linear
 and ReLU autoencoders at two weight-decay levels (`--weight-decay 1.0` and `6.0`).
 
 ```bash
-python -m synthetic_bows.train_autoencoders \
+uv run python -m synthetic_bows.train_autoencoders \
   --correlation-structures circular figure8 sphere iid \
   --tie-weights \
   --num-features 12 \
@@ -29,7 +29,7 @@ python -m synthetic_bows.train_autoencoders \
 ## Generate plots
 
 ```bash
-python -m synthetic_bows.plots \
+uv run python -m synthetic_bows.plots \
   --results-dir ./synthetic_bows/results \
   --output-dir ./synthetic_bows/figures \
   --dtype circular
